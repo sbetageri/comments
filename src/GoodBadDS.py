@@ -2,22 +2,12 @@ from CommentDataSet import CommentDataSet
 
 class GoodBadDS(CommentDataSet):
     def __getitem__(self, idx):
-        comment = self.df.iloc[idx]
-        bad = False
+        comment, labels = super(GoodBadDS, self).__getitem__(idx)
 
-        toxic = self.df.iloc[idx].toxic == True
-        bad = bad and toxic
+        ## comment_type == True implies that the comment is toxic in some form.
+        if sum(labels) > 0:
+            comment_type = True
+        else:
+            comment_type = False
 
-        severe_toxic = self.df.iloc[idx].severe_toxic == True
-        bad = bad and severe_toxic
-
-        obscene = self.df.iloc[idx].obscene == True
-        bad = bad and obscene
-
-        threat = self.df.iloc[idx].threat == True
-        bad = bad and threat
-
-        identity_hate = self.df.iloc[idx].identity_hate == True
-        bad = bad and identity_hate
-
-        return comment, bad
+        return comment, comment_type
