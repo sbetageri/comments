@@ -6,6 +6,8 @@ from tqdm import tqdm
 
 ds = GoodBadDS.GoodBadDS()
 
+nlp = spacy.load('en_core_web_sm')
+
 vocab = set()
 count = 0
 for comment, label in tqdm(ds):
