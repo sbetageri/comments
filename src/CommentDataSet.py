@@ -1,3 +1,5 @@
+import spacy
+
 import pandas as pd
 import numpy as np
 
@@ -7,6 +9,7 @@ class CommentDataSet(Dataset):
     COMMENT_COL = 'comment_text'
     def __init__(self, path='../data/train.csv'):
         self.df = pd.read_csv(path)
+        self.nlp = spacy.load('en_core_web_sm')
 
     def __len__(self):
         return len(self.df)
@@ -18,6 +21,11 @@ class CommentDataSet(Dataset):
         labels = labels.astype(int)
         labels = labels.reshape(labels.shape[0], 1)
         return comment, labels
+
+    def _tokenize_comment(self, comment):
+        comment = comment.lower()
+        doc = self.nlp(comment)
+        return doc
 
 
 if __name__ == '__main__':
