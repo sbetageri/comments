@@ -7,8 +7,10 @@ from torch.utils.data import Dataset
 
 class CommentDataSet(Dataset):
     COMMENT_COL = 'comment_text'
-    def __init__(self, path='../data/train.csv'):
+    def __init__(self, path='../data/train.csv', is_dev=True):
         self.df = pd.read_csv(path)
+        if is_dev:
+            self.df = self.df[:10]
         self.nlp = spacy.load('en_core_web_sm')
 
     def __len__(self):
