@@ -1,10 +1,17 @@
 import spacy
 import GoodBadDS
 import pickle
+import sys
 
 from tqdm import tqdm
 
-ds = GoodBadDS.GoodBadDS()
+is_dev = True
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == 'train':
+        is_dev = False
+
+ds = GoodBadDS.GoodBadDS(is_dev=is_dev)
 
 nlp = spacy.load('en_core_web_sm')
 
