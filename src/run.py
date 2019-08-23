@@ -1,5 +1,4 @@
 import spacy
-import pickle
 import GoodBadDS
 
 from tqdm import tqdm
@@ -16,7 +15,8 @@ for comment, label in tqdm(ds):
         break
     comment = comment.lower()
     comment = nlp(comment)
-    com_vocab = set(comment)
+    com_vocab = set(comment.text)
     vocab.update(com_vocab)
 
-pickle.dump(vocab, open('vocab.set', 'wb'))
+print(vocab)
+print(len(vocab))
