@@ -1,4 +1,6 @@
+import torch
 import spacy
+import Utils
 
 import pandas as pd
 import numpy as np
@@ -9,9 +11,20 @@ class CommentDataSet(Dataset):
     COMMENT_COL = 'comment_text'
     def __init__(self, path='../data/train.csv', is_dev=True):
         self.df = pd.read_csv(path)
+        
+        vocab_file = '../models/vocab_train.st'
+        tok2idx_file = '../models/tok2idx_train.st'
+        idx2tok_file = '../models/idx2tok_train.st'
         if is_dev:
             self.df = self.df[:10]
+            vocab_file = '../models/vocab_dev.st'
+            tok2idx_file = '../models/tok2idx_dev.st'
+            idx2tok_file = '../models/idx2tok_dev.st'
+            
         self.nlp = spacy.load('en_core_web_sm')
+        self.vocab = Utils.load_obj(vocab_file)
+        self.tok2idx = Utils.load_obj(tok2idx_file)
+        self.idx2tok = Utils.load_obj(idx2tok_file)
 
     def __len__(self):
         return len(self.df)
@@ -22,13 +35,14 @@ class CommentDataSet(Dataset):
         labels = np.array(datapoint[2:].values)
         labels = labels.astype(int)
         labels = labels.reshape(labels.shape[0], 1)
-        return comment, labels
-
-    def _tokenize_comment(self, comment):
-        comment = comment.lower()
-        doc = self.nlp(comment)
-        return doc
-
+        
+        ## Tokenize and One Hot Encode comment
+        t_comments = Utils.tokenize(comment, self.nlp)
+        t_comments = Utils.comment_to_tensor(t_comments, self.tok2idx)
+        t_comments = torch.from_numpy(t_comments)
+        
+        t_labels = torch.from_numpy(labels)
+        return t_comments, t_labels
 
 if __name__ == '__main__':
     ds = CommentDataSet()
