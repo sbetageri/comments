@@ -1,8 +1,11 @@
 import spacy
-import GoodBadDS
 import pickle
 import sys
+import torch
+
+import c_rnn
 import Utils
+import GoodBadDS
 
 from tqdm import tqdm
 
@@ -33,6 +36,41 @@ def build_indexer(vocab_file, base_idxer_file, is_dev=True):
     Utils.save_obj(tok2idx, tok2idx_file_name)
     Utils.save_obj(idx2tok, idx2tok_file_name)
 
+def get_device():
+    return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+def train(model, dataloader, epochs, optimizer, loss_func):
+    device = get_device()
+    tot_loss = []
+    tot_acc = []
+    for e in range(epochs):
+        running_loss = 0
+        running_acc = 0
+        print('Epoch : ', e)
+        for comment, label in tqdm(dataloader):
+            comment = comment.to(device)
+            label = label.to(device)
+            label = label.view(-1, 1)
+            
+            out = model(comment)
+            label = label.float()
+            loss = loss_func(out, label)
+            
+            running_loss += loss.item()
+            out = (out == label)
+            out = out.int()
+            running_acc += sum(out).item()
+            
+        running_loss = running_loss / (len(dataloader) * dataloader.batch_size)
+        running_acc = running_acc / (len(dataloader) * dataloader.batch_size)
+        print('Loss : ', running_loss)
+        print('Acc : ', running_acc)
+        tot_acc.append(running_acc)
+        tot_loss.append(running_loss)
+    return tot_loss, tot_acc
+            
+
+
 if __name__ == '__main__':
     is_dev = True
 
@@ -47,6 +85,8 @@ if __name__ == '__main__':
         print('\tEx $python run.py dev vocab')
         print('idx : Build token to index table and index to token table')
         print('\tEx $python run.py dev idx')
+        print('learn : Train the model')
+        print('\tEx $python run.py dev learn')
         sys.exit(0)
         
     print('Task : ', task)
@@ -72,3 +112,27 @@ if __name__ == '__main__':
             vocab_file = '../models/vocab_train.st'    
         
         build_indexer(vocab_file, base_idxer_file, is_dev=is_dev)
+    
+    elif task == 'learn':
+        device = get_device()
+        
+        idx_file = '../models/tok2idx_train.st'
+        if is_dev:
+            idx_file = '../models/tok2idx_dev.st'
+            
+        dataset = GoodBadDS.GoodBadDS(is_dev=is_dev)
+        dataloader = Utils.get_dataloader(dataset) 
+        
+        vocab_size = Utils.get_vocab_size(idx_file)
+        
+        model = c_rnn.c_rnn(vocab_size=vocab_size)
+        model = model.to(device)
+
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        loss_func = torch.nn.BCEWithLogitsLoss()
+        
+        tot_loss, tot_acc = train(model, 
+                dataloader, 
+                epochs=2, 
+                optimizer=optimizer, 
+                loss_func=loss_func)
