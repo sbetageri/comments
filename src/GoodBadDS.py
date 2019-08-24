@@ -2,6 +2,9 @@ import torch
 from CommentDataSet import CommentDataSet
 
 class GoodBadDS(CommentDataSet):
+    def __init__(self, is_dev=True, is_setup=False):
+        super(GoodBadDS, self).__init__(is_dev=is_dev, is_setup=is_setup)
+
     def __getitem__(self, idx):
         comment, labels = super(GoodBadDS, self).__getitem__(idx)
 
