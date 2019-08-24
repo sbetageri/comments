@@ -80,6 +80,15 @@ def tokenize(comment, nlp):
     return l_comm
 
 def get_OHE_token(token, tok2idx):
+    '''Convert token to one hot encoded form
+    
+    :param token: Token to be converted
+    :type token: String
+    :param tok2idx: Token to Index map
+    :type tok2idx: Dict
+    :return: One Hot Encoded Vector
+    :rtype: 1D Numpy array
+    '''
     size = (len(tok2idx), 1)
     token_vec = np.zeros(size)
     idx = tok2idx[token]
@@ -87,6 +96,15 @@ def get_OHE_token(token, tok2idx):
     return token_vec
 
 def comment_to_tensor(comment, tok2idx):
+    '''Convert a list of tokens to One Hot Encoded form
+    
+    :param comment: Tokens in comment
+    :type comment: List of tokens
+    :param tok2idx: Token to Index map
+    :type tok2idx: Dict
+    :return: One Hot Encoded form of tokens in comment
+    :rtype: 2D Numpy array
+    '''
     ## Plus 2 because of START and END tokens
     size = (len(tok2idx), len(comment) + 2)
     tnsr_comment = np.zeros(size)
