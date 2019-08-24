@@ -3,6 +3,7 @@ import spacy
 import pickle
 
 from tqdm import tqdm
+from collections import defaultdict
 
 def get_vocab(nlp, dataset):
     '''Get the vocab of a corpus
@@ -22,6 +23,23 @@ def get_vocab(nlp, dataset):
         com_vocab = set(l_doc)
         vocab.update(com_vocab)
     return vocab
+
+def get_indexer(vocab):
+    '''Build indexers for the vocabulary
+    
+    :param vocab: Vocabulary of the dataset
+    :type vocab: Set
+    :return: Token to index and index to token maps
+    :rtype: Dict
+    '''
+    tokens = list(vocab)
+    tokens.sort()
+    tok2idx = {}
+    idx2tok = {}
+    for idx, token in enumerate(tokens):
+        tok2idx[token] = idx
+        idx2tok[idx] = token
+    return tok2idx, idx2tok
 
 def save_obj(obj, file_name):
     '''Save a python obj to file
