@@ -48,6 +48,7 @@ def train(model, dataloader, epochs, optimizer, loss_func):
         running_acc = 0
         print('Epoch : ', e)
         for comment, label in tqdm(dataloader):
+            optimizer.zero_grad()
             comment = comment.to(device)
             label = label.to(device)
             label = label.view(-1, 1)
@@ -55,8 +56,12 @@ def train(model, dataloader, epochs, optimizer, loss_func):
             out = model(comment)
             label = label.float()
             loss = loss_func(out, label)
+            loss.backward()
+            optimizer.step()
             
             running_loss += loss.item()
+            out = (out > 0.5)
+            out = out.float()
             out = (out == label)
             out = out.int()
             running_acc += sum(out).item()
