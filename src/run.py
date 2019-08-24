@@ -122,8 +122,10 @@ if __name__ == '__main__':
         device = get_device()
         
         idx_file = '../models/tok2idx_train.st'
+        epochs = 20
         if is_dev:
             idx_file = '../models/tok2idx_dev.st'
+            epochs = 2
             
         dataset = GoodBadDS.GoodBadDS(is_dev=is_dev)
         dataloader = Utils.get_dataloader(dataset) 
@@ -138,6 +140,6 @@ if __name__ == '__main__':
         
         tot_loss, tot_acc = train(model, 
                 dataloader, 
-                epochs=2, 
+                epochs=epochs, 
                 optimizer=optimizer, 
                 loss_func=loss_func)
