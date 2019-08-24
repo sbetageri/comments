@@ -154,3 +154,14 @@ def get_dataloader(dataset, batch_size=16, collate_fn=_collate_):
         batch_size=batch_size,
         collate_fn=collate_fn)
     return dataloader
+
+def get_vocab_size(idx_file):
+    '''Return vocabulary size of given index file
+    
+    :param idx_file: Index file, either dev/train set
+    :type idx_file: String
+    :return: Length of vocab
+    :rtype: Int
+    '''
+    idxer = pickle.load(open(idx_file, 'rb'))
+    return len(idxer)
