@@ -48,6 +48,7 @@ class CommentDataSet(Dataset):
         t_comments = Utils.tokenize(comment, self.nlp)
         t_comments = Utils.comment_to_tensor(t_comments, self.tok2idx)
         t_comments = torch.from_numpy(t_comments)
+        t_comments = t_comments.long()
         
         t_labels = torch.from_numpy(labels)
         return t_comments, t_labels
