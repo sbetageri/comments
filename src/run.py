@@ -71,4 +71,4 @@ if __name__ == '__main__':
         else:
             vocab_file = '../models/vocab_train.st'    
         
-        build_indexer(vocab_file, base_idxer_file)
+        build_indexer(vocab_file, base_idxer_file, is_dev=is_dev)
