@@ -111,16 +111,16 @@ def comment_to_tensor(comment, tok2idx):
     '''
     ## Plus 2 because of START and END tokens
     size = (len(tok2idx), len(comment) + 2)
-    tnsr_comment = np.zeros(size)
+    tnsr_comment = np.zeros(len(comment) + 2)
     start_pos = tok2idx[START]
     end_pos = tok2idx[END]
-    tnsr_comment[start_pos, 0] = 1
-    tnsr_comment[end_pos, -1] = 1
+    tnsr_comment[0] = start_pos
+    tnsr_comment[-1] = end_pos
     for idx, token in enumerate(comment):
         token_idx = tok2idx[token]
         
         # Adding one to offset START token
-        tnsr_comment[token_idx, idx + 1] = 1
+        tnsr_comment[idx] = token_idx
     return tnsr_comment
 
 def _collate_(batch):
@@ -132,7 +132,6 @@ def _collate_(batch):
     :return: Padded sequence of tensors and lables
     :rtype: List of tupel(padded_comments, t_labels)
     '''
-    print(batch)
     data = [item[0].T for item in batch]
     labels = [item[1] for item in batch]
     data = nn.utils.rnn.pad_sequence(data)
