@@ -1,11 +1,14 @@
 import GoodBadDS
 import spacy
 import pickle
+import torch
 
 import numpy as np
+import torch.nn as nn
 
 from tqdm import tqdm
 from collections import defaultdict
+from torch.utils.data import DataLoader
 
 START = '<start>'
 END = '<end>'
@@ -119,3 +122,36 @@ def comment_to_tensor(comment, tok2idx):
         # Adding one to offset START token
         tnsr_comment[token_idx, idx + 1] = 1
     return tnsr_comment
+
+def _collate_(batch):
+    '''Collate function for Dataloader. 
+    Pads the tensors to be off the same size.
+    
+    :param batch: Comment and label in tensor form
+    :type batch: List of tuple(t_comment, t_labels)
+    :return: Padded sequence of tensors and lables
+    :rtype: List of tupel(padded_comments, t_labels)
+    '''
+    print(batch)
+    data = [item[0].T for item in batch]
+    labels = [item[1] for item in batch]
+    data = nn.utils.rnn.pad_sequence(data)
+    labels = torch.stack(labels)
+    return [data, labels]
+
+def get_dataloader(dataset, batch_size=16, collate_fn=_collate_):
+    '''Build dataloader to given dataset
+    
+    :param dataset: Dataset
+    :type dataset: torch.nn.utils.data.DataSet
+    :param batch_size: Size of the batch, defaults to 16
+    :type batch_size: Int, optional
+    :param collate_fn: Method to collate mini-batches, defaults to _collat_
+    :type collate_fn: Function, optional
+    :return: Dataloader to given dataset
+    :rtype: torhc.utils.data.DataLoader
+    '''
+    dataloader = DataLoader(dataset, 
+        batch_size=batch_size,
+        collate_fn=collate_fn)
+    return dataloader
