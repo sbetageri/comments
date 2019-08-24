@@ -17,7 +17,7 @@ class CommentDataSet(Dataset):
         tok2idx_file = '../models/tok2idx_train.st'
         idx2tok_file = '../models/idx2tok_train.st'
         if is_dev:
-            self.df = self.df[:10]
+            self.df = self.df[:100]
             vocab_file = '../models/vocab_dev.st'
             tok2idx_file = '../models/tok2idx_dev.st'
             idx2tok_file = '../models/idx2tok_dev.st'
