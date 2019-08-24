@@ -2,8 +2,13 @@ import GoodBadDS
 import spacy
 import pickle
 
+import numpy as np
+
 from tqdm import tqdm
 from collections import defaultdict
+
+START = '<start>'
+END = '<end>'
 
 def get_vocab(nlp, dataset):
     '''Get the vocab of a corpus
@@ -15,7 +20,7 @@ def get_vocab(nlp, dataset):
     :return: Vocab of dataset
     :rtype: Set
     '''
-    vocab = set()
+    vocab = set([START, END])
     for comment, label in tqdm(dataset):
         comment = comment.lower()
         comment = nlp(comment)
@@ -59,3 +64,39 @@ def load_obj(file_name):
     '''
     obj = pickle.load(open(file_name, 'rb'))
     return obj
+
+def tokenize(comment, nlp):
+    '''Tokenize a given comment
+    
+    :param comment: Comment to be tokenized
+    :type comment: String
+    :param nlp: SpaCy nlp obj
+    :type nlp: Nlp obj
+    :return: List of tokens
+    :rtype: List    
+    '''
+    comment = nlp(comment)
+    l_comm = [str(token) for token in comment]
+    return l_comm
+
+def get_OHE_token(token, tok2idx):
+    size = (len(tok2idx), 1)
+    token_vec = np.zeros(size)
+    idx = tok2idx[token]
+    token_vec[idx] = 1
+    return token_vec
+
+def comment_to_tensor(comment, tok2idx):
+    ## Plus 2 because of START and END tokens
+    size = (len(tok2idx), len(comment) + 2)
+    tnsr_comment = np.zeros(size)
+    start_pos = tok2idx[START]
+    end_pos = tok2idx[END]
+    tnsr_comment[start_pos, 0] = 1
+    tnsr_comment[end_pos, -1] = 1
+    for idx, token in enumerate(comment):
+        token_idx = tok2idx[token]
+        
+        # Adding one to offset START token
+        tnsr_comment[token_idx, idx + 1] = 1
+    return tnsr_comment
