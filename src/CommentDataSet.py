@@ -9,8 +9,9 @@ from torch.utils.data import Dataset
 
 class CommentDataSet(Dataset):
     COMMENT_COL = 'comment_text'
-    def __init__(self, path='../data/train.csv', is_dev=True):
+    def __init__(self, path='../data/train.csv', is_dev=True, is_setup=False):
         self.df = pd.read_csv(path)
+        self.is_setup = is_setup
         
         vocab_file = '../models/vocab_train.st'
         tok2idx_file = '../models/tok2idx_train.st'
@@ -22,6 +23,10 @@ class CommentDataSet(Dataset):
             idx2tok_file = '../models/idx2tok_dev.st'
             
         self.nlp = spacy.load('en_core_web_sm')
+        
+        if self.is_setup:
+            return
+            
         self.vocab = Utils.load_obj(vocab_file)
         self.tok2idx = Utils.load_obj(tok2idx_file)
         self.idx2tok = Utils.load_obj(idx2tok_file)
@@ -35,6 +40,9 @@ class CommentDataSet(Dataset):
         labels = np.array(datapoint[2:].values)
         labels = labels.astype(int)
         labels = labels.reshape(labels.shape[0], 1)
+        
+        if self.is_setup:
+            return comment, labels
         
         ## Tokenize and One Hot Encode comment
         t_comments = Utils.tokenize(comment, self.nlp)

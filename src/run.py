@@ -35,7 +35,6 @@ def build_indexer(vocab_file, base_idxer_file, is_dev=True):
 
 if __name__ == '__main__':
     is_dev = True
-    task = 'vocab'
 
     if len(sys.argv) == 3:
         if sys.argv[1] == 'train':
@@ -49,10 +48,11 @@ if __name__ == '__main__':
         print('idx : Build token to index table and index to token table')
         print('\tEx $python run.py dev idx')
         sys.exit(0)
-
+        
+    print('Task : ', task)
 
     if task == 'vocab':
-        ds = GoodBadDS.GoodBadDS(is_dev=is_dev)
+        ds = GoodBadDS.GoodBadDS(is_dev=is_dev, is_setup=True)
         nlp = spacy.load('en_core_web_sm')
     
         vocab = Utils.get_vocab(nlp, ds)
