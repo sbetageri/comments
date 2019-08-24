@@ -75,6 +75,7 @@ def tokenize(comment, nlp):
     :return: List of tokens
     :rtype: List    
     '''
+    comment = comment.lower()
     comment = nlp(comment)
     l_comm = [str(token) for token in comment]
     return l_comm
