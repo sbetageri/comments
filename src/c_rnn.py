@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class c_rnn(nn.Module):
-    def __init__(self, vocab_size=231, embed_size=128, hidden_size=128):
+    def __init__(self, vocab_size=231, embed_size=128, hidden_size=64):
         super(c_rnn, self).__init__()
         
         self.hidden_size = hidden_size
 
         self.embed = nn.Embedding(vocab_size, embed_size)
-        self.rnn = nn.RNN(embed_size, self.hidden_size)
+        self.rnn = nn.RNN(embed_size, self.hidden_size, nonlinearity='relu')
         self.fc = nn.Linear(self.hidden_size, 1)
 
     def forward(self, x):
