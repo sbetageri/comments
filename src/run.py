@@ -39,40 +39,73 @@ def build_indexer(vocab_file, base_idxer_file, is_dev=True):
 def get_device():
     return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def train(model, dataloader, epochs, optimizer, loss_func):
+def train(model, train_loader, val_loader, epochs, optimizer, loss_func):
     device = get_device()
     tot_loss = []
     tot_acc = []
+    val_loss = []
+    val_acc = []
     for e in range(epochs):
         running_loss = 0
         running_acc = 0
         print('Epoch : ', e)
-        for comment, label in tqdm(dataloader):
-            optimizer.zero_grad()
-            comment = comment.to(device)
-            label = label.to(device)
-            label = label.view(-1, 1)
+        model.train()
+        with torch.set_grad_enabled(True):
+            for comment, label in tqdm(train_loader):
+                optimizer.zero_grad()
+                comment = comment.to(device)
+                label = label.to(device)
+                label = label.view(-1, 1)
             
-            out = model(comment)
-            label = label.float()
-            loss = loss_func(out, label)
-            loss.backward()
-            optimizer.step()
+                out = model(comment)
+                label = label.float()
+                loss = loss_func(out, label)
+                loss.backward()
+                optimizer.step()
             
-            running_loss += loss.item()
-            out = (out > 0.5)
-            out = out.float()
-            out = (out == label)
-            out = out.int()
-            running_acc += sum(out).item()
+                running_loss += loss.item()
+                out = (out > 0.5)
+                out = out.float()
+                out = (out == label)
+                out = out.int()
+                running_acc += sum(out).item()
             
-        running_loss = running_loss / (len(dataloader) * dataloader.batch_size)
-        running_acc = running_acc / (len(dataloader) * dataloader.batch_size)
-        print('Loss : ', running_loss)
-        print('Acc : ', running_acc)
-        tot_acc.append(running_acc)
-        tot_loss.append(running_loss)
-    return tot_loss, tot_acc
+            running_loss = running_loss / (len(train_loader) * train_loader.batch_size)
+            running_acc = running_acc / (len(train_loader) * train_loader.batch_size)
+            print('Training Loss : ', running_loss)
+            print('Training Acc : ', running_acc)
+            tot_acc.append(running_acc)
+            tot_loss.append(running_loss)
+        
+        model.eval()
+        running_loss = 0
+        running_acc = 0
+        with torch.set_grad_enabled(False):
+            for comment, label in tqdm(val_loader):
+                comment = comment.to(device)
+                label = label.to(device)
+                label = label.view(-1, 1)
+                label = label.float()
+                
+                out = model(comment)
+                loss = loss_func(out, label)
+                
+                out = (out > 0.5)
+                out = out.float()
+                out = (out == label)
+                out = out.int()
+                
+                running_loss += loss.item()
+                running_acc += sum(out).item()
+
+            running_loss = running_loss / (len(val_loader) * val_loader.batch_size)
+            running_acc = running_acc / (len(val_loader) * val_loader.batch_size)
+            print('Validation Loss : ', running_loss)
+            print('Validation Acc : ', running_acc)
+            val_acc.append(running_acc)
+            val_loss.append(running_loss)
+
+    return tot_loss, tot_acc, val_loss, val_acc
             
 
 
@@ -129,6 +162,8 @@ if __name__ == '__main__':
             
         dataset = GoodBadDS.GoodBadDS(is_dev=is_dev)
         dataloader = Utils.get_dataloader(dataset) 
+        train_loader, val_loader = Utils.get_train_val_loader(dataset,
+                                                            val_perc=0.15)
         
         vocab_size = Utils.get_vocab_size(idx_file)
         
@@ -138,8 +173,9 @@ if __name__ == '__main__':
         optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
         loss_func = torch.nn.BCEWithLogitsLoss()
         
-        tot_loss, tot_acc = train(model, 
-                dataloader, 
+        tot_loss, tot_acc, val_loss, val_acc = train(model, 
+                train_loader, 
+                val_loader,
                 epochs=epochs, 
                 optimizer=optimizer, 
                 loss_func=loss_func)
