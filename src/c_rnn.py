@@ -9,16 +9,22 @@ class c_rnn(nn.Module):
         self.hidden_size = hidden_size
 
         self.embed = nn.Embedding(vocab_size, embed_size)
-        self.rnn = nn.RNN(embed_size, 
+        self.rnn1 = nn.RNN(embed_size, 
                         self.hidden_size, 
-                        nonlinearity='relu',
-                        num_layers=2,
-                        dropout=0.4)
+                        nonlinearity='relu')
+        self.rnn2 = nn.RNN(self.hidden_size,
+                        self.hidden_size,
+                        nonlinearity='relu')
+        
+        self.dropout = nn.Dropout(0.4)
+
         self.fc = nn.Linear(self.hidden_size, 1)
 
     def forward(self, x):
         x = self.embed(x)
-        x, hx = self.rnn(x)
+        x, hx = self.rnn1(x)
+        x = self.dropout(x)
+        x, hx = self.rnn2(x)
         hx = hx.view(hx.size(1), -1)
         x = self.fc(hx)
         return x
