@@ -9,6 +9,7 @@ import torch.nn as nn
 from tqdm import tqdm
 from collections import defaultdict
 from torch.utils.data import DataLoader
+from torch.utils.data import random_split
 
 START = '<start>'
 END = '<end>'
@@ -154,6 +155,44 @@ def get_dataloader(dataset, batch_size=16, collate_fn=_collate_):
         batch_size=batch_size,
         collate_fn=collate_fn)
     return dataloader
+
+def get_train_val_loader(dataset, val_perc, batch_size=16, collate_fn=_collate_):
+    '''Get train and validation data loaders
+    
+    :param dataset: Dataset to be parsed
+    :type dataset: torch.utils.data.DataLoader
+    :param val_perc: Validation split percentage
+    :type val_perc: Float
+    :param batch_size: Batch size, defaults to 16
+    :type batch_size: Int, optional
+    :param collate_fn: Collate function to process mini-batch, defaults to _collate_
+    :type collate_fn: Function, optional
+    :return: Train and validaiton dataloaders
+    :rtype: Tuple
+    '''
+    train_data, val_data = split_dataset(dataset, val_perc)
+    train_loader = get_dataloader(train_data, 
+                                batch_size=batch_size,
+                                collate_fn=collate_fn)
+    val_loader = get_dataloader(val_data, 
+                                batch_size=batch_size,
+                                collate_fn=collate_fn)
+    return train_loader, val_loader
+
+def split_dataset(dataset, val_perc):
+    '''Split a dataset into train and val sets, based on a given percentage
+    
+    :param dataset: Dataset to be split on
+    :type dataset: torch.utils.data.DataSet
+    :param val_perc: Validation split percentage
+    :type val_perc: Float
+    :return: Train and validation datasets
+    :rtype: List
+    '''
+    tot_len = len(dataset)
+    val_len = int(val_perc * tot_len)
+    train_len = tot_len - val_len
+    return random_split(dataset, [train_len, val_len])
 
 def get_vocab_size(idx_file):
     '''Return vocabulary size of given index file
