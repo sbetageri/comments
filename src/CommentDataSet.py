@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 
 class CommentDataSet(Dataset):
     COMMENT_COL = 'comment_text'
-    def __init__(self, path='../data/train.csv', is_dev=True, is_setup=False):
+    def __init__(self, path='../data/small_train.csv', is_dev=True, is_setup=False):
         self.df = pd.read_csv(path)
         self.is_setup = is_setup
         
