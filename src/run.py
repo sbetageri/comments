@@ -170,7 +170,7 @@ if __name__ == '__main__':
         model = c_rnn.c_rnn(vocab_size=vocab_size)
         model = model.to(device)
 
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
+        optimizer = torch.optim.SparseAdam(model.parameters(), lr=0.01)
         loss_func = torch.nn.BCEWithLogitsLoss()
         
         tot_loss, tot_acc, val_loss, val_acc = train(model, 
